@@ -409,40 +409,41 @@ class TopCinemaProvider : MainAPI() {
                         interceptor = cfInterceptor
                     )
                     val finalWatchUrl = response.url
-                    val finalBaseUrl = getBaseUrl(finalWatchUrl)
-                    val watchDoc = response.document
+val finalBaseUrl = getBaseUrl(finalWatchUrl)
+val watchDoc = response.document
 
-                    watchDoc.selectFirst(".player--iframe iframe")?.attr("src")?.let {
-                        extractedLinks[it] = finalWatchUrl
-                    }
+watchDoc.selectFirst(".player--iframe iframe")?.attr("src")?.let {
+    extractedLinks[it] = finalWatchUrl
+}
 
-                    val servers = watchDoc.select(".watch--servers--list li.server--item")
+val servers = watchDoc.select(".watch--servers--list li.server--item")
 logError("TopCinema: Found ${servers.size} servers")
 
 servers.amap { server ->
-                        val ajaxUrl =
-                            "$finalBaseUrl/wp-content/themes/movies2023/Ajaxat/Single/Server.php"
-                        val res = app.post(
-                            ajaxUrl,
-                            data = mapOf(
-                                "id" to server.attr("data-id"),
-                                "i" to server.attr("data-server")
-                            ),
-                            headers = getDynamicPostHeaders(finalWatchUrl),
-                            interceptor = cfInterceptor
-                        ).text
+    val ajaxUrl =
+        "$finalBaseUrl/wp-content/themes/movies2023/Ajaxat/Single/Server.php"
 
-logError("TopCinema: Server response: ${res.take(500)}")
+    val res = app.post(
+        ajaxUrl,
+        data = mapOf(
+            "id" to server.attr("data-id"),
+            "i" to server.attr("data-server")
+        ),
+        headers = getDynamicPostHeaders(finalWatchUrl),
+        interceptor = cfInterceptor
+    ).text
 
-Jsoup.parse(res).select("iframe").forEach { iframe ->
-    val src = iframe.attr("src")
-    logError("TopCinema: iframe found: $src")
+    logError("TopCinema: Server response: ${res.take(500)}")
 
-    if (src.isNotBlank()) {
-        extractedLinks[src] = finalWatchUrl
+    Jsoup.parse(res).select("iframe").forEach { iframe ->
+        val src = iframe.attr("src")
+        logError("TopCinema: iframe found: $src")
+
+        if (src.isNotBlank()) {
+            extractedLinks[src] = finalWatchUrl
+        }
     }
 }
-                    }
                 } else if (rawUrl.contains("/download/")) {
                     val response = app.get(
                         rawUrl,
