@@ -417,7 +417,7 @@ watchDoc.selectFirst(".player--iframe iframe")?.attr("src")?.let {
 }
 
 val servers = watchDoc.select(".watch--servers--list li.server--item")
-logError("TopCinema: Found ${servers.size} servers")
+println("TopCinema: Found ${servers.size} servers")
 
 servers.amap { server ->
     val ajaxUrl =
@@ -433,11 +433,11 @@ servers.amap { server ->
         interceptor = cfInterceptor
     ).text
 
-    logError("TopCinema: Server response: ${res.take(500)}")
+    println("TopCinema: Server response: ${res.take(500)}")
 
     Jsoup.parse(res).select("iframe").forEach { iframe ->
         val src = iframe.attr("src")
-        logError("TopCinema: iframe found: $src")
+        println("TopCinema: iframe found: $src")
 
         if (src.isNotBlank()) {
             extractedLinks[src] = finalWatchUrl
