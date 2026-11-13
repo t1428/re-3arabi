@@ -416,7 +416,10 @@ class TopCinemaProvider : MainAPI() {
                         extractedLinks[it] = finalWatchUrl
                     }
 
-                    watchDoc.select(".watch--servers--list li.server--item").amap { server ->
+                    val servers = watchDoc.select(".watch--servers--list li.server--item")
+logError("TopCinema: Found ${servers.size} servers")
+
+servers.amap { server ->
                         val ajaxUrl =
                             "$finalBaseUrl/wp-content/themes/movies2023/Ajaxat/Single/Server.php"
                         val res = app.post(
@@ -429,9 +432,16 @@ class TopCinemaProvider : MainAPI() {
                             interceptor = cfInterceptor
                         ).text
 
-                        Jsoup.parse(res).selectFirst("iframe")?.attr("src")?.let {
-                            extractedLinks[it] = finalWatchUrl
-                        }
+logError("TopCinema: Server response: ${res.take(500)}")
+
+Jsoup.parse(res).select("iframe").forEach { iframe ->
+    val src = iframe.attr("src")
+    logError("TopCinema: iframe found: $src")
+
+    if (src.isNotBlank()) {
+        extractedLinks[src] = finalWatchUrl
+    }
+}
                     }
                 } else if (rawUrl.contains("/download/")) {
                     val response = app.get(
